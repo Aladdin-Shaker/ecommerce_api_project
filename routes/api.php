@@ -14,6 +14,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::group(['prefix' => 'user', 'namespace' => 'API', 'guard' => 'api'], function () {
+    // config(['auth.defaults.guard' => 'api']); // change default guard from config/auth
+
+    // user auth
+    Route::post('register', 'Auth\UserAuth@register');
+    Route::post('login', 'Auth\UserAuth@login');
+
+    // authunticated user
+    Route::group(['middleware' => 'jwt.verify'], function () {
+        Route::post('refresh', 'Auth\UserAuth@refresh'); // refresh token
+        Route::get('detail', 'Auth\UserAuth@detail'); // get user detail
+        Route::any('logout', 'Auth\UserAuth@Logout'); // logout
+    });
 });

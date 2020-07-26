@@ -80,7 +80,7 @@ class Handler extends ExceptionHandler
         // when we obtain an a specific instance of model does'nt exist
         if ($exception instanceof ModelNotFoundException) {
             $modelName = strtolower(class_basename($exception->getModel()));
-            return $this->sendResult("Does not exist any '{$modelName}' with the specified identificator", [], [], false);
+            return $this->SendExceptionErr("Does not exist any {$modelName} with specified identificator", 404);
         }
 
         // when some user try to access to specific action without any authunticated to the system
@@ -91,22 +91,22 @@ class Handler extends ExceptionHandler
 
         // when some user is authunticated to the system but dont have permissions for specific action
         if ($exception instanceof AuthorizationException) {
-            return $this->sendResult($exception->getMessage(), [], [], false);
+            return $this->SendExceptionErr($exception->getMessage(), 403);
         }
 
         // when some user try to access a resource does'nt exist, like wrong URL
         if ($exception instanceof NotFoundHttpException) {
-            return $this->sendResult("The specified URL not found", [], [], false);
+            return $this->SendExceptionErr('The specified URL cannot be found', 404);
         }
 
         // when some user try to send a request to a specific real route but with wrong http method
         if ($exception instanceof MethodNotAllowedHttpException) {
-            return $this->sendResult("The specified method for the request is ivalid", [], [], false);
+            return $this->SendExceptionErr('The specified method for the requests is invalid', 405);
         }
 
         // general role to handle any other kind of http exceptions
         if ($exception instanceof HttpException) {
-            return $this->sendResult($exception->getMessage(), [], [], false);
+            return $this->SendExceptionErr($exception->getMessage(), $exception->getStatusCode());
         }
 
         // handle exception is not related with http => to handle exception related to the db, remove resource related to other resource => this operation cannot be possible because we are doing any violation of the FK constraints
@@ -114,7 +114,7 @@ class Handler extends ExceptionHandler
             // dd($exception);
             $errorCode = $exception->errorInfo[1];
             if ($errorCode == 1451) {
-                return $this->sendResult('Cannot remove this resource permently, Its related with other resource', [], [], false);
+                return $this->SendExceptionErr('cannot remove this resource permanently, It is related with any other resource', 409);
             }
         }
 
@@ -133,7 +133,7 @@ class Handler extends ExceptionHandler
         // handle an expected exception like call fail in any moment
         // any exception does'nt match with any of above conditions
         // 500 => means the exception from the server side only
-        return $this->sendResult("Unexpected Excption, Try later", [], [], false);
+        return $this->SendExceptionErr('Unexpected Exception, Try later', 500);
     }
 
     // overridding the method from parent class from render method
@@ -147,7 +147,7 @@ class Handler extends ExceptionHandler
                 ->withInput($request->input())
                 ->withErrors($errors);
         }
-        return $this->sendResult("Error", $errors, [], false);
+        return $this->SendExceptionErr($errors, 422);
     }
 
 
@@ -158,7 +158,7 @@ class Handler extends ExceptionHandler
         if ($this->isFrontEnd($request)) {
             return redirect()->guest('login');
         }
-        return $this->sendResult("Unauthenticated", [], [], false);
+        return $this->SendExceptionErr('Unauthenticated', 401);
     }
 
     // check if the request comming from web or API

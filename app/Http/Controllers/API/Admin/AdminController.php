@@ -23,8 +23,6 @@ class AdminController extends ApiController
 
     public function update(Request $request, $id)
     {
-        // dd(request()->all());
-
         $rules = [
             'name' => 'required',
             'email' => 'required|unique:admins,email,' . $id,
@@ -32,27 +30,20 @@ class AdminController extends ApiController
         ];
 
         $data = $this->validate($request, $rules);
+
         if (request()->has('password')) {
             $data['password'] = bcrypt(request('password'));
         }
-
-        $admin = DB::table('admins')->where('id', $id);
-        return ($admin);
+        $admin = Admin::findOrfail($id);
         $admin->update($data);
-        return $this->sendResult('Admin data updated successfuly', $admin, [], true);
+        return $this->sendOne('Admin data updated successfuly', $admin, [], true);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
         $admin = Admin::findOrfail($id);
         $admin->delete();
-        return $this->showOne($admin);
+        return $this->sendOne('Admin deleted successfuly', $admin, [], true);
     }
 
     public function multi_delete()
@@ -62,6 +53,6 @@ class AdminController extends ApiController
         } else {
             $admin = Admin::findOrfail(request('item'))->delete();
         }
-        return $this->showOne($admin);
+        return $this->sendOne('Admins deleted successfuly', $admin, [], true);
     }
 }

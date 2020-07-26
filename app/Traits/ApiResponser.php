@@ -4,17 +4,37 @@ namespace App\Traits;
 
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 trait ApiResponser
 {
 
+    // return auth response data
+    protected function sendAuthResult($message, $data, $error, $code, $status = true)
+    {
+        $result = [
+            'status' => $status,
+            'code' => $code,
+            'data' => $data,
+            'message' => $message,
+            'error' =>  $error,
+        ];
+        return response()->json($result);
+    }
+
+    // handle all responses for multiple data
     protected function sendResult($message, $data, $errors = [], $status = true)
     {
         $errorCode = $status ? 200 : 422;
-        $data = $this->filterData($data);
-        $data = $this->sortData($data);
-        $data = $this->paginateData($data);
+        $data = new Collection($data);
+
+        if ($data->isEmpty() or $data === null) {
+            $data = null;
+        } else {
+            // $data = $this->filterData($data);
+            $data = $this->sortData($data);
+            $data = $this->paginateData($data);
+        }
         $result = [
             "message" => $message,
             "status" => $status,
@@ -22,6 +42,29 @@ trait ApiResponser
             "errors" => $errors
         ];
         return response()->json($result, $errorCode);
+    }
+
+    // handle single data rsponse
+    protected function sendOne($message, $data, $errors = [], $status = true)
+    {
+        $errorCode = $status ? 200 : 422;
+        if ($data == '' || $data == null) {
+            $data = '';
+        } else {
+            $result = [
+                "message" => $message,
+                "status" => $status,
+                "data" => $data,
+                "errors" => $errors
+            ];
+        }
+        return response()->json($result, $errorCode);
+    }
+
+    // Send Error Response
+    protected function SendExceptionErr($errorMessage = [], $code)
+    {
+        return response()->json($errorMessage, $code);
     }
 
     // sort data by something
@@ -39,12 +82,12 @@ trait ApiResponser
     protected function filterData($data)
     {
         // get the query from the request and get the attribute with value
-        // ex => http://127.0.0.1:8000/api/activities?title=test
-        // $query = title  & $value = test
+        // ex => http://127.0.0.1:8000/api/users?name=test
+        // $query = name  & $value = test
         foreach (request()->query() as $query => $value) {
             if (isset($query, $value)) {
                 // dd(isset($query, $value));
-                $data = $data->where($query, $value);
+                $data = $data->whereIn($query, $value);
             }
         }
         return $data;

@@ -4,11 +4,12 @@ namespace App\Http\Controllers\API\Color;
 
 use Illuminate\Support\Facades\Storage;
 use App\DataTables\ColorDataTable;
+use App\Http\Controllers\API\ApiController;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Model\Color;
 
-class ColorController extends Controller
+class ColorController extends ApiController
 {
     /**
      * Display a listing of the resource.
@@ -44,8 +45,7 @@ class ColorController extends Controller
             'color' => 'required'
         ]);
         Color::create($data);
-        session()->flash('success', trans('admin.record_added'));
-        return redirect(aurl('colors'));
+        return $this->sendResult('success', $data, [], true);
     }
 
     /**

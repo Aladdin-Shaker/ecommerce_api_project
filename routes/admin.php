@@ -2,25 +2,25 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::group(['prefix' => 'admin', 'namespace' => 'API'], function () {
-    config(['auth.defaults.guard' => 'admin']); // change default guard from config/auth
+Route::group(['prefix' => 'admin', 'namespace' => 'API', 'guard' => 'admin'], function () {
+    // config(['auth.defaults.guard' => 'admin']); // change default guard from config/auth
 
     // admin auth
     Route::post('register', 'Auth\AdminAuth@register');
     Route::post('login', 'Auth\AdminAuth@login');
 
     // authunticated admin
-    Route::group(['middleware' => ['admin:admin', 'jwt.verify']], function () {
+    Route::group(['middleware' => ['jwt.verify']], function () {
 
         Route::post('refresh', 'Auth\AdminAuth@refresh'); // refresh token
-        Route::get('me', 'Auth\AdminAuth@detail'); // get admin detail
+        Route::get('me', 'Auth\AdminAuth@me'); // get admin detail
         Route::any('logout', 'Auth\AdminAuth@Logout'); // logout
 
         // admin
-        Route::resource('admin', 'Admin\AdminController', ['only' => ['update', 'destroy', 'index']]);
+        Route::resource('admin', 'Admin\AdminController', ['only' => ['index', 'update', 'destroy']]);
         Route::delete('admin/destroy/all', 'Admin\AdminController@multi_delete');
         // user
-        Route::resource('users', 'User\UserController');
+        Route::resource('users', 'User\UserController', ['only' => ['index', 'update', 'destroy']]);
         Route::delete('users/destroy/all', 'User\UserController@multi_delete');
         //  countries
         Route::resource('countries', 'Country\CountryController');

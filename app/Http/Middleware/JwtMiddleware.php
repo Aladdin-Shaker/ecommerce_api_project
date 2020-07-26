@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Traits\ApiResponser;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Http\Middleware\BaseMiddleware;
@@ -14,6 +15,7 @@ class JwtMiddleware extends BaseMiddleware
 // with this, we can catch token errors and return appropriate error codes to our users.
 {
 
+    use ApiResponser;
     /**
      * Handle an incoming request.
      *
@@ -25,57 +27,51 @@ class JwtMiddleware extends BaseMiddleware
     {
 
         try {
-
             $token = JWTAuth::parseToken(); // Access token from the request
-            $admin = $token->authenticate(); // Try authenticating user
-            if (!$admin) throw new Exception('Admin Not Found');
+            $user = $token->authenticate(); // Try authenticating user
+            if (!$user) throw new Exception('User Not Found');
         } catch (Exception $e) {
-            if ($e instanceof TokenInvalidException) {  //Thrown if token invalid
-                return response()->json([
-                    'data' => null,
-                    'status' => false,
-                    'err_' => [
-                        'message' => 'Token Invalid, Please Login Again ',
-                        'code' => $e->getStatusCode()
-                    ]
-                ]);
-            } else if ($e instanceof TokenExpiredException) {  //Thrown if token has expired
-                return response()->json([
-                    'data' => null,
-                    'status' => false,
-                    'err_' => [
-                        'message' => 'Token Expired, Please Login Again',
-                        'code' => $e->getStatusCode()
-                    ]
-                ]);
-            } elseif ($e instanceof  JWTException) {  //Thrown if token was not found in the request.
-                return response()->json([
-                    'data' => null,
-                    'status' => false,
-                    'err_' => [
-                        'message' => 'Please, Attach A Bearer Token Ao Your Request',
-                        'code' => $e->getStatusCode()
-                    ]
-                ]);
+            // if token invalid
+            if ($e instanceof TokenInvalidException) {
+                $data = null;
+                $status = false;
+                $error = 'Token invalid, please login again';
+                $code = 1;
+                $message = '';
+                return $this->sendAuthResult($message, $data, $error, $code, $status);
+            }
+            // if token has expired
+            else if ($e instanceof TokenExpiredException) {
+                $data = null;
+                $status = false;
+                $error = 'Token expired, please login again';
+                $code = 1;
+                $message = '';
+                return $this->sendAuthResult($message, $data, $error, $code, $status);
+            }
+            // if token was not found in the request
+            elseif ($e instanceof  JWTException) {
+                $data = null;
+                $status = false;
+                $error = 'Please, attach a bearer token to your request';
+                $code = 1;
+                $message = '';
+                return $this->sendAuthResult($message, $data, $error, $code, $status);
             } else {
-                if ($e->getMessage() === 'Admin Not Found') {
-                    return response()->json([
-                        "data" => null,
-                        "status" => false,
-                        "err_" => [
-                            "message" => "Admin Not Found",
-                            "code" => $e->getStatusCode()
-                        ]
-                    ]);
+                if ($e->getMessage() === 'User Not Found') {
+                    $data = null;
+                    $status = false;
+                    $error = 'User not found';
+                    $code = 1;
+                    $message = '';
+                    return $this->sendAuthResult($message, $data, $error, $code, $status);
                 }
-                return response()->json([
-                    'data' => null,
-                    'status' => false,
-                    'err_' => [
-                        'message' => 'Authorization Token not found',
-                        'code' => $e->getStatusCode()
-                    ]
-                ]);
+                $data = null;
+                $status = false;
+                $error = 'Authorization token not found';
+                $code = 1;
+                $message = '';
+                return $this->sendAuthResult($message, $data, $error, $code, $status);
             }
         }
         return $next($request);

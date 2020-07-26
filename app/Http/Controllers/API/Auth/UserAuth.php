@@ -9,16 +9,17 @@ use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Admin;
+use App\User;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 
-class AdminAuth extends ApiController
+class UserAuth extends ApiController
 {
     /*
-        The authenticate method attempts to log a admin in and generates an authorization token if the admin is found in the database. It throws an error if the admin is not found or if an exception occurred while trying to find the admin.
+        /*
+        The authenticate method attempts to log a user in and generates an authorization token if the user is found in the database. It throws an error if the user is not found or if an exception occurred while trying to find the user.
     */
     public function login()
     {
@@ -35,7 +36,7 @@ class AdminAuth extends ApiController
 
         $credentials = request()->only('email', 'password');
         try {
-            if (!$token = Auth::guard('admin')->attempt($credentials)) {
+            if (!$token = Auth::guard('api')->attempt($credentials)) {
                 return response()->json(['error' => 'invalid_credentials'], 400);
             } else {
                 $message = 'logged in successfully';
@@ -45,7 +46,7 @@ class AdminAuth extends ApiController
                 $data = [
                     '_token' => $token,
                     'token_type' => 'Bearer',
-                    'expires_in' => Auth::guard('admin')->factory()->getTTL() * 60
+                    'expires_in' => Auth::guard('api')->factory()->getTTL() * 60
                 ];
             }
         } catch (Exception $e) {
@@ -59,49 +60,49 @@ class AdminAuth extends ApiController
     }
 
     /*
-        The register method validates a admin input and creates a admin if the admin credentials are validated. The admin is then passed on to JWTAuth to generate an access token for the created admin. This way, the admin would not need to log in to get it.
+        The register method validates a user input and creates a user if the user credentials are validated. The user is then passed on to JWTAuth to generate an access token for the created user. This way, the user would not need to log in to get it.
     */
 
     public function register(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:admins',
+            'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
         if ($validator->fails()) {
             return $this->SendExceptionErr($validator->errors(), 400);
         }
-        $admin = Admin::create([
+        $user = User::create([
             'name' => $request->get('name'),
             'email' => $request->get('email'),
             'password' => Hash::make($request->get('password')),
         ]);
-        $token = JWTAuth::fromUser($admin);
+        $token = JWTAuth::fromUser($user);
         $status = true;
         $message = "signed up successfully";
         $code = 201;
         $data = [
-            'admin' => $admin,
+            'user' => $user,
             '_token' => $token,
             'token_type' => 'Bearer',
-            'expires_in' =>  Auth::guard('admin')->factory()->getTTL() * 60
+            'expires_in' =>  Auth::guard('api')->factory()->getTTL() * 60
         ];
 
         return $this->sendAuthResult($message, $data, '', $code, $status);
     }
 
     /**
-     * Bring the details of the verified admin.
+     * Bring the details of the verified user.
      *
      * @return JsonResponse
      */
-    public function me(): JsonResponse
+    public function detail(): JsonResponse
     {
         try {
-            if (!$admin = Auth::guard('admin')->user()) {
-                return $this->SendExceptionErr(["error" => "admin_not_found"], 404);
+            if (!$user = Auth::guard('api')->user()) {
+                return $this->SendExceptionErr(["error" => "user_not_found"], 404);
             }
         } catch (TokenExpiredException $e) {
             return $this->SendExceptionErr(["error" => "token_expired"], $e->getStatusCode());
@@ -115,19 +116,19 @@ class AdminAuth extends ApiController
         $status = true;
         $code = 200;
         $data = [
-            'admin' => $admin
+            'user' => $user
         ];
         return $this->sendAuthResult($message, $data, '', $code, $status);
     }
 
     /**
-     *Log out the admin and make the token unusable.
+     *Log out the user and make the token unusable.
      * @return JsonResponse
      */
 
     public function logout(): JsonResponse
     {
-        Auth::guard('admin')->logout();
+        Auth::guard('api')->logout();
         $message = "logout successfully";
         $status = true;
         $code = 200;
@@ -146,9 +147,9 @@ class AdminAuth extends ApiController
         $message = "refresh token successfully";
         $error = "";
         $data = [
-            '_token' => Auth::guard('admin')->refresh(),
+            '_token' => Auth::guard('api')->refresh(),
             'token_type' => 'Bearer',
-            'expires_in' =>  Auth::guard('admin')->factory()->getTTL() * 60
+            'expires_in' =>  Auth::guard('api')->factory()->getTTL() * 60
         ];;
         return $this->sendAuthResult($message, $data, $error, $code, $status);
     }
