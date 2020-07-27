@@ -2,40 +2,19 @@
 
 namespace App\Http\Controllers\API\Department;
 
+use App\Http\Controllers\API\ApiController;
 use Illuminate\Support\Facades\Storage;
-use App\DataTables\CityDataTable;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Model\Department;
 
-class DepartmentController extends Controller
+class DepartmentController extends ApiController
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index()
     {
-        return view('admin.departments.index', ['title' => trans('admin.departments')]);
+        $data = Department::all();
+        return $this->sendResult('success', $data, [], true);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('admin.departments.create', ['title' => trans('admin.create_department')]);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store()
     {
         $data =  $this->validate(request(), [
@@ -55,43 +34,17 @@ class DepartmentController extends Controller
                 'delete_file' => ''
             ]);
         }
-        Department::create($data);
-        session()->flash('success', trans('admin.record_added'));
-        return redirect(aurl('departments'));
+        $department = Department::create($data);
+        return $this->sendOne('department adedd successfully', $department, [], true);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        //
+        $department = Department::findOrfail($id);
+        return $this->sendOne('success', $department, [], true);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $department = Department::find($id);
-        $title = trans('admin.edit');
-        return view('admin.departments.edit', compact('department', 'title'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+    public function update($id)
     {
         $data =  $this->validate(request(), [
             'dep_name_ar' => 'required',
@@ -110,9 +63,9 @@ class DepartmentController extends Controller
 
             ]);
         }
-        Department::where('id', $id)->update($data);
-        session()->flash('success', trans('admin.record_updated'));
-        return redirect(aurl('departments'));
+        $department = Department::findOrfail($id);
+        $department->update($data);
+        return $this->sendOne('department updated successfully', $department, [], true);
     }
 
 
@@ -132,6 +85,7 @@ class DepartmentController extends Controller
         }
         // delete the current department
         $parent_dep = Department::find($id);
+        // return (dd($parent_dep));
         if (!empty($parent_dep->icon)) {
             Storage::has($parent_dep->icon) ? Storage::delete($parent_dep->icon) : '';
         }
@@ -146,8 +100,7 @@ class DepartmentController extends Controller
      */
     public function destroy($id)
     {
-        self::delete_parent($id);
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('departments'));
+        // $department = self::delete_parent($id);
+        // return $this->sendOne('department deleted successfully', $department, [], true);
     }
 }

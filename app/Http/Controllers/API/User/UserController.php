@@ -44,14 +44,4 @@ class UserController extends ApiController
         $user->delete();
         return $this->sendOne('User deleted successfuly', $user, [], true);
     }
-
-    public function multi_delete()
-    {
-        if (is_array(request('item'))) {
-            $user = User::destroy(request('item'));
-        } else {
-            $user = User::find(request('item'))->delete();
-        }
-        return $this->sendOne('Users deleted successfuly', $user, [], true);
-    }
 }

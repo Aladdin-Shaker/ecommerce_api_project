@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers\API\Settings;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\API\ApiController;
 use App\Model\Setting;
+use Illuminate\Support\Facades\DB;
 use Up;
 
-class Settings extends Controller
+class Settings extends ApiController
 {
     public function settings()
     {
-        return view('admin.settings', ['title' => trans('admin.settings')]);
+        $data = Setting::get();
+        return $this->sendOne('success', $data, [], true);
     }
 
     public function settings_save()
@@ -46,8 +48,9 @@ class Settings extends Controller
             ]);
         }
 
-        Setting::orderBy('id', 'desc')->update($data);
-        session()->flash('success', trans('admin.record_updated'));
-        return redirect(aurl('settings'));
+        DB::table('settings')->update($data);
+        $result = Setting::get();
+
+        return $this->sendOne('success', $result, [], true);
     }
 }

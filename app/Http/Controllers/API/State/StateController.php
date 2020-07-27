@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\API\State;
 
 use App\DataTables\StateDataTable;
+use App\Http\Controllers\API\ApiController;
 use App\Http\Controllers\Controller;
 use App\Model\City;
 use App\Model\State;
 use Illuminate\Http\Request;
 use Form;
 
-class StateController extends Controller
+class StateController extends ApiController
 {
     /**
      * Display a listing of the resource.
@@ -18,37 +19,10 @@ class StateController extends Controller
      */
     public function index()
     {
-        // return $state->render('admin.states.index', ['title' =>  trans('admin.states')]);
+        $data = State::all();
+        return $this->sendResult('success', $data, [], true);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        if (request()->ajax()) {
-            if (request()->has('country_id')) {
-                $select = request()->has('select') ? request('select') : '';
-                return Form::select(
-                    'city_id',
-                    City::where('country_id', request('country_id'))
-                        ->pluck('city_name_' . session('lang'), 'id'),
-                    $select,
-                    ['class' => 'form-control', 'placeholder' => '..........']
-                );
-            }
-        }
-        return view('admin.states.create', ['title' => trans('admin.create_state')]);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store()
     {
         $data =  $this->validate(request(), [
@@ -58,43 +32,17 @@ class StateController extends Controller
             'city_id' => 'required|numeric',
         ]);
 
-        State::create($data);
-        session()->flash('success', trans('admin.record_added'));
-        return redirect(aurl('states'));
+        $state = State::create($data);
+        return $this->sendOne('state adedd successfully', $state, [], true);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        //
+        $state = State::findOrfail($id);
+        return $this->sendOne('success', $state, [], true);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $state = State::find($id);
-        $title = trans('admin.edit');
-        return view('admin.states.edit', compact('state', 'title'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+    public function update($id)
     {
         $data =  $this->validate(request(), [
             'state_name_ar' => 'required',
@@ -102,9 +50,9 @@ class StateController extends Controller
             'country_id' => 'required|numeric',
             'city_id' => 'required|numeric',
         ]);
-        State::where('id', $id)->update($data);
-        session()->flash('success', trans('admin.record_updated'));
-        return redirect(aurl('states'));
+        $state = State::findOrfail($id);
+        $state->update($data);
+        return $this->sendOne('state updated successfully', $state, [], true);
     }
 
     /**
@@ -115,24 +63,8 @@ class StateController extends Controller
      */
     public function destroy($id)
     {
-        $state = State::find($id);
+        $state = State::findOrfail($id);
         $state->delete();
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('states'));
-    }
-
-    public function multi_delete()
-    {
-        if (is_array(request('item'))) {
-            foreach (request('item') as $id) {
-                $state = State::find($id);
-                $state->delete();
-            }
-        } else {
-            $state = State::find(request('item'));
-            $state->delete();
-        }
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('states'));
+        return $this->sendOne('state deleted successfully', $state, [], true);
     }
 }

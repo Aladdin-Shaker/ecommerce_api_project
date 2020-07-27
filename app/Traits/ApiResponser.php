@@ -25,6 +25,7 @@ trait ApiResponser
     // handle all responses for multiple data
     protected function sendResult($message, $data, $errors = [], $status = true)
     {
+        // dd($data);
         $errorCode = $status ? 200 : 422;
         $data = new Collection($data);
 
@@ -38,7 +39,7 @@ trait ApiResponser
         $result = [
             "message" => $message,
             "status" => $status,
-            "data" => $data,
+            "data" => [$data],
             "errors" => $errors
         ];
         return response()->json($result, $errorCode);
@@ -49,7 +50,12 @@ trait ApiResponser
     {
         $errorCode = $status ? 200 : 422;
         if ($data == '' || $data == null) {
-            $data = '';
+            $result = [
+                "message" => $message,
+                "status" => $status,
+                "data" => '',
+                "errors" => $errors
+            ];
         } else {
             $result = [
                 "message" => $message,

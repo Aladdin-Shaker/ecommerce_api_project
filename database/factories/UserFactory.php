@@ -72,19 +72,6 @@ $factory->define(Setting::class, function (Faker $faker) {
     ];
 });
 
-$factory->define(File::class, function (Faker $faker) {
-    return [
-        'name' => $faker->name,
-        'size' => $faker->randomNumber,
-        'file' => $faker->name,
-        'path' => 'products/29',
-        'full_file' => 'products/29/pChv06dmpyR15XzPW1aICOfQUPVgOgENsXlFcVur.jpeg',
-        'mime_type' => $faker->mimeType,
-        'file_type' => 'product',
-        'relation_id' => $faker->randomNumber,
-    ];
-});
-
 $factory->define(Country::class, function (Faker $faker) {
     return [
         'country_name_ar' => $faker->name,
@@ -229,11 +216,17 @@ $factory->define(Product::class, function (Faker $faker) {
     ];
 });
 
-$factory->define(OtherData::class, function (Faker $faker) {
+
+$factory->define(File::class, function (Faker $faker) {
     return [
-        'product_id' => Product::pluck('id')->random(),
-        'data_key' => $faker->text,
-        'data_value' => $faker->text,
+        'name' => $faker->name,
+        'size' => $faker->randomNumber,
+        'file' => $faker->name,
+        'path' => 'products/29',
+        'full_file' => 'products/29/pChv06dmpyR15XzPW1aICOfQUPVgOgENsXlFcVur.jpeg',
+        'mime_type' => $faker->mimeType,
+        'file_type' => 'product',
+        'relation_id' => Product::pluck('id')->random(),
     ];
 });
 
@@ -241,12 +234,5 @@ $factory->define(ProductMall::class, function (Faker $faker) {
     return [
         'product_id' => Product::pluck('id')->random(),
         'mall_id' => Mall::pluck('id')->random(),
-    ];
-});
-
-$factory->define(RelatedProduct::class, function (Faker $faker) {
-    return [
-        'product_id' => Product::pluck('id')->random(),
-        'related_product' => $faker->randomElement([1, 2, 3, 4, 5, 6, 7, 8]),
     ];
 });

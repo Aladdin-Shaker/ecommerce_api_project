@@ -9,7 +9,6 @@ use App\Model\Department;
 use App\Model\File;
 use App\Model\Mall;
 use App\Model\Manufacture;
-use App\Model\OtherData;
 use App\Model\Product;
 use App\Model\ProductMall;
 use App\Model\RelatedProduct;
@@ -39,7 +38,6 @@ class DatabaseSeeder extends Seeder
         Admin::truncate();
         User::truncate();
         Setting::truncate();
-        File::truncate();
         Country::truncate();
         City::truncate();
         State::truncate();
@@ -52,14 +50,12 @@ class DatabaseSeeder extends Seeder
         Size::truncate();
         Weight::truncate();
         Product::truncate();
-        OtherData::truncate();
+        File::truncate();
         ProductMall::truncate();
-        RelatedProduct::truncate();
 
-        $users = factory(Admin::class, 10)->create();
-        $users = factory(User::class, 500)->create();
+        factory(Admin::class, 10)->create();
+        factory(User::class, 500)->create();
         factory(Setting::class, 1)->create();
-        factory(File::class, 20)->create();
         factory(Country::class, 50)->create();
         factory(City::class, 100)->create();
         factory(State::class, 200)->create();
@@ -72,9 +68,8 @@ class DatabaseSeeder extends Seeder
         factory(Size::class, 100)->create();
         factory(Weight::class, 20)->create();
         factory(Product::class, 300)->create();
-        factory(OtherData::class, 20)->create();
+        factory(File::class, 20)->create();
         factory(ProductMall::class, 30)->create();
-        factory(RelatedProduct::class, 20)->create();
 
 
         /* foreach ($users as $user) {

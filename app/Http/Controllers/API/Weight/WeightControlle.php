@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\API\Weight;
 
-use App\DataTables\WeightDataTable;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\API\ApiController;
 use Illuminate\Http\Request;
 use App\Model\Weight;
 
-class WeightController extends Controller
+class WeightController extends ApiController
 {
     /**
      * Display a listing of the resource.
@@ -16,17 +15,8 @@ class WeightController extends Controller
      */
     public function index()
     {
-        //  return $weight->render('admin.weights.index', ['title' =>  trans('admin.weights')]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('admin.weights.create', ['title' => trans('admin.create_weight')]);
+        $data = Weight::all();
+        return $this->sendResult('success', $data, [], true);
     }
 
     /**
@@ -41,9 +31,8 @@ class WeightController extends Controller
             'name_ar' => 'required|string',
             'name_en' => 'required|string'
         ]);
-        Weight::create($data);
-        session()->flash('success', trans('admin.record_added'));
-        return redirect(aurl('weights'));
+        $weight = Weight::create($data);
+        return $this->sendOne('weight adedd successfully', $weight, [], true);
     }
 
     /**
@@ -54,20 +43,8 @@ class WeightController extends Controller
      */
     public function show($id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $weight = Weight::find($id);
-        $title = trans('admin.edit');
-        return view('admin.weights.edit', compact('weight', 'title'));
+        $weight = Weight::findOrfail($id);
+        return $this->sendOne('success', $weight, [], true);
     }
 
     /**
@@ -77,16 +54,15 @@ class WeightController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update($id)
     {
         $data =  $this->validate(request(), [
             'name_ar' => 'required|string',
             'name_en' => 'required|string'
         ]);
-
-        Weight::where('id', $id)->update($data);
-        session()->flash('success', trans('admin.record_updated'));
-        return redirect(aurl('weights'));
+        $weight = Weight::findOrfail($id);
+        $weight->update($data);
+        return $this->sendOne('weight updated successfully', $weight, [], true);
     }
 
     /**
@@ -97,24 +73,8 @@ class WeightController extends Controller
      */
     public function destroy($id)
     {
-        $weight = Weight::find($id);
+        $weight = Weight::findOrfail($id);
         $weight->delete();
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('weights'));
-    }
-
-    public function multi_delete()
-    {
-        if (is_array(request('item'))) {
-            foreach (request('item') as $id) {
-                $weight = Weight::find($id);
-                $weight->delete();
-            }
-        } else {
-            $weight = Weight::find(request('item'));
-            $weight->delete();
-        }
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('weights'));
+        return $this->sendOne('weight deleted successfully', $weight, [], true);
     }
 }

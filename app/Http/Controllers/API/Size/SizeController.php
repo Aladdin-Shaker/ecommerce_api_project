@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\API\Size;
 
-use App\DataTables\SizeDataTable;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\API\ApiController;
 use Illuminate\Http\Request;
 use App\Model\Size;
 
-class SizeController extends Controller
+class SizeController extends ApiController
 {
     /**
      * Display a listing of the resource.
@@ -16,17 +15,8 @@ class SizeController extends Controller
      */
     public function index()
     {
-        // return $size->render('admin.sizes.index', ['title' =>  trans('admin.sizes')]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('admin.sizes.create', ['title' => trans('admin.create_size')]);
+        $data = Size::all();
+        return $this->sendResult('success', $data, [], true);
     }
 
     /**
@@ -43,9 +33,8 @@ class SizeController extends Controller
             'is_public' => 'required|in:yes,no',
             'department_id' => 'required|numeric'
         ]);
-        Size::create($data);
-        session()->flash('success', trans('admin.record_added'));
-        return redirect(aurl('sizes'));
+        $size = Size::create($data);
+        return $this->sendOne('size adedd successfully', $size, [], true);
     }
 
     /**
@@ -56,20 +45,8 @@ class SizeController extends Controller
      */
     public function show($id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $size = Size::find($id);
-        $title = trans('admin.edit');
-        return view('admin.sizes.edit', compact('size', 'title'));
+        $size = Size::findOrfail($id);
+        return $this->sendOne('success', $size, [], true);
     }
 
     /**
@@ -87,10 +64,9 @@ class SizeController extends Controller
             'is_public' => 'required|in:yes,no',
             'department_id' => 'required|numeric'
         ]);
-
-        Size::where('id', $id)->update($data);
-        session()->flash('success', trans('admin.record_updated'));
-        return redirect(aurl('sizes'));
+        $size = Size::findOrfail($id);
+        $size->update($data);
+        return $this->sendOne('size updated successfully', $size, [], true);
     }
 
     /**
@@ -101,24 +77,8 @@ class SizeController extends Controller
      */
     public function destroy($id)
     {
-        $size = Size::find($id);
+        $size = Size::findOrfail($id);
         $size->delete();
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('sizes'));
-    }
-
-    public function multi_delete()
-    {
-        if (is_array(request('item'))) {
-            foreach (request('item') as $id) {
-                $size = Size::find($id);
-                $size->delete();
-            }
-        } else {
-            $size = Size::find(request('item'));
-            $size->delete();
-        }
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('sizes'));
+        return $this->sendOne('size deleted successfully', $size, [], true);
     }
 }

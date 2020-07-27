@@ -111,10 +111,13 @@ class Handler extends ExceptionHandler
 
         // handle exception is not related with http => to handle exception related to the db, remove resource related to other resource => this operation cannot be possible because we are doing any violation of the FK constraints
         if ($exception instanceof QueryException) {
-            // dd($exception);
             $errorCode = $exception->errorInfo[1];
+            // dd($errorCode);
             if ($errorCode == 1451) {
                 return $this->SendExceptionErr('cannot remove this resource permanently, It is related with any other resource', 409);
+            }
+            if ($errorCode == 1452) {
+                return $this->SendExceptionErr('Cannot add or update a foreign key not exist', 409);
             }
         }
 

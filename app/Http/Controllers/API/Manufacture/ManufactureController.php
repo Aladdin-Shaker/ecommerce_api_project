@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers\API\Manufacture;
 
+use App\Http\Controllers\API\ApiController;
 use Illuminate\Support\Facades\Storage;
-use App\DataTables\ManufactureDataTable;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Model\City;
 use App\Model\Manufacture;
 
-class ManufactureController extends Controller
+class ManufactureController extends ApiController
 {
     /**
      * Display a listing of the resource.
@@ -18,17 +16,8 @@ class ManufactureController extends Controller
      */
     public function index()
     {
-        // return $manufacture->render('admin.manufactures.index', ['title' =>  trans('admin.manufactures')]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('admin.manufactures.create', ['title' => trans('admin.create_manufacture')]);
+        $data = Manufacture::all();
+        return $this->sendResult('success', $data, [], true);
     }
 
     /**
@@ -60,9 +49,8 @@ class ManufactureController extends Controller
                 'delete_file' => '',
             ]);
         }
-        Manufacture::create($data);
-        session()->flash('success', trans('admin.record_added'));
-        return redirect(aurl('manufactures'));
+        $manufacture = Manufacture::create($data);
+        return $this->sendOne('manufacture adedd successfully', $manufacture, [], true);
     }
 
     /**
@@ -73,20 +61,8 @@ class ManufactureController extends Controller
      */
     public function show($id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $manufacture = Manufacture::find($id);
-        $title = trans('admin.edit');
-        return view('admin.manufactures.edit', compact('manufacture', 'title'));
+        $manufacture = Manufacture::findOrfail($id);
+        return $this->sendOne('success', $manufacture, [], true);
     }
 
     /**
@@ -119,10 +95,9 @@ class ManufactureController extends Controller
                 'delete_file' => Manufacture::find($id)->icon,
             ]);
         }
-
-        Manufacture::where('id', $id)->update($data);
-        session()->flash('success', trans('admin.record_updated'));
-        return redirect(aurl('manufactures'));
+        $manufacture = Manufacture::findOrfail($id);
+        $manufacture->update($data);
+        return $this->sendOne('manufacture updated successfully', $manufacture, [], true);
     }
 
     /**
@@ -133,27 +108,9 @@ class ManufactureController extends Controller
      */
     public function destroy($id)
     {
-        $manufacture = Manufacture::find($id);
+        $manufacture = Manufacture::findOrfail($id);
         $manufacture->delete();
         Storage::delete($manufacture->icon);
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('manufactures'));
-    }
-
-    public function multi_delete()
-    {
-        if (is_array(request('item'))) {
-            foreach (request('item') as $id) {
-                $manufacture = Manufacture::find($id);
-                Storage::delete($manufacture->icon);
-                $manufacture->delete();
-            }
-        } else {
-            $manufacture = Manufacture::find(request('item'));
-            $manufacture->delete();
-            Storage::delete($manufacture->icon);
-        }
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('manufactures'));
+        return $this->sendOne('manufacture deleted successfully', $manufacture, [], true);
     }
 }

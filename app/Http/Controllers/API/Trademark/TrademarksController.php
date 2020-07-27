@@ -3,13 +3,10 @@
 namespace App\Http\Controllers\API\Trademark;
 
 use Illuminate\Support\Facades\Storage;
-use App\DataTables\TrademarksDataTable;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Model\City;
+use App\Http\Controllers\API\ApiController;
 use App\Model\TradeMarks;
 
-class TrademarksController extends Controller
+class TrademarksController extends ApiController
 {
     /**
      * Display a listing of the resource.
@@ -18,17 +15,8 @@ class TrademarksController extends Controller
      */
     public function index()
     {
-        // return $trade->render('admin.trademarks.index', ['title' =>  trans('admin.trademarks')]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('admin.trademarks.create', ['title' => trans('admin.create_trademark')]);
+        $data = TradeMarks::all();
+        return $this->sendResult('success', $data, [], true);
     }
 
     /**
@@ -52,9 +40,8 @@ class TrademarksController extends Controller
                 'delete_file' => '',
             ]);
         }
-        TradeMarks::create($data);
-        session()->flash('success', trans('admin.record_added'));
-        return redirect(aurl('trademarks'));
+        $trademark = TradeMarks::create($data);
+        return $this->sendOne('trademark adedd successfully', $trademark, [], true);
     }
 
     /**
@@ -65,20 +52,8 @@ class TrademarksController extends Controller
      */
     public function show($id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $trade = TradeMarks::find($id);
-        $title = trans('admin.edit');
-        return view('admin.trademarks.edit', compact('trade', 'title'));
+        $trademark = TradeMarks::findOrfail($id);
+        return $this->sendOne('success', $trademark, [], true);
     }
 
     /**
@@ -88,7 +63,7 @@ class TrademarksController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update($id)
     {
         $data =  $this->validate(request(), [
             'name_ar' => 'required',
@@ -100,13 +75,12 @@ class TrademarksController extends Controller
                 'file' => 'logo',
                 'path' => 'trademarks',
                 'upload_type' => 'single',
-                'delete_file' => Trademarks::find($id)->logo,
+                'delete_file' => Trademarks::findOrfail($id)->logo,
             ]);
         }
-
-        TradeMarks::where('id', $id)->update($data);
-        session()->flash('success', trans('admin.record_updated'));
-        return redirect(aurl('trademarks'));
+        $trademark = TradeMarks::findOrfail($id);
+        $trademark->update($data);
+        return $this->sendOne('trademark updated successfully', $trademark, [], true);
     }
 
     /**
@@ -117,27 +91,9 @@ class TrademarksController extends Controller
      */
     public function destroy($id)
     {
-        $trade = Trademarks::find($id);
-        $trade->delete();
-        Storage::delete($trade->logo);
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('trademarks'));
-    }
-
-    public function multi_delete()
-    {
-        if (is_array(request('item'))) {
-            foreach (request('item') as $id) {
-                $trade = Trademarks::find($id);
-                Storage::delete($trade->logo);
-                $trade->delete();
-            }
-        } else {
-            $trade = Trademarks::find(request('item'));
-            $trade->delete();
-            Storage::delete($trade->logo);
-        }
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('trademarks'));
+        $trademark = Trademarks::findOrfail($id);
+        $trademark->delete();
+        Storage::delete($trademark->logo);
+        return $this->sendOne('trademark deleted successfully', $trademark, [], true);
     }
 }

@@ -2,27 +2,17 @@
 
 namespace App\Http\Controllers\API\Country;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\API\ApiController;
 use App\Model\Country;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-class CountryController extends Controller
+class CountryController extends ApiController
 {
 
     public function index()
     {
-        //  return $country->render('admin.countries.index', ['title' =>  trans('admin.countries')]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('admin.countries.create', ['title' => trans('admin.create_country')]);
+        $data = Country::all();
+        return $this->sendResult('success', $data, [], true);
     }
 
     /**
@@ -33,14 +23,17 @@ class CountryController extends Controller
      */
     public function store()
     {
-        $data =  $this->validate(request(), [
+        $rules = [
             'country_name_ar' => 'required',
             'country_name_en' => 'required',
             'mob' => 'required',
             'code' => 'required',
             'currency' => 'required',
             'logo' => 'sometimes|nullable|' . v_image(),
-        ]);
+        ];
+
+        $data =  $this->validate(request(), $rules);
+
         if (request()->has('logo')) {
             $data['logo'] = up()->upload([
                 'file' => 'logo',
@@ -50,9 +43,8 @@ class CountryController extends Controller
 
             ]);
         }
-        Country::create($data);
-        session()->flash('success', trans('admin.record_added'));
-        return redirect(aurl('countries'));
+        $country = Country::create($data);
+        return $this->sendOne('country adedd successfully', $country, [], true);
     }
 
     /**
@@ -63,20 +55,8 @@ class CountryController extends Controller
      */
     public function show($id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $country = Country::find($id);
-        $title = trans('admin.edit');
-        return view('admin.countries.edit', compact('country', 'title'));
+        $country = Country::findOrfail($id);
+        return $this->sendOne('success', $country, [], true);
     }
 
     /**
@@ -86,7 +66,7 @@ class CountryController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update($id)
     {
         $data =  $this->validate(request(), [
             'country_name_ar' => 'required',
@@ -105,9 +85,9 @@ class CountryController extends Controller
 
             ]);
         }
-        Country::where('id', $id)->update($data);
-        session()->flash('success', trans('admin.record_updated'));
-        return redirect(aurl('countries'));
+        $country = Country::findOrfail($id);
+        $country->update($data);
+        return $this->sendOne('country updated successfully', $country, [], true);
     }
 
     /**
@@ -118,27 +98,9 @@ class CountryController extends Controller
      */
     public function destroy($id)
     {
-        $country = Country::find($id);
+        $country = Country::findOrfail($id);
         $country->delete();
         Storage::delete($country->logo);
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('countries'));
-    }
-
-    public function multi_delete()
-    {
-        if (is_array(request('item'))) {
-            foreach (request('item') as $id) {
-                $country = Country::find($id);
-                Storage::delete($country->logo);
-                $country->delete();
-            }
-        } else {
-            $country = Country::find(request('item'));
-            $country->delete();
-            Storage::delete($country->logo);
-        }
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('countries'));
+        return $this->sendOne('country deleted successfully', $country, [], true);
     }
 }

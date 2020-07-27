@@ -22,10 +22,10 @@ class Upload extends Controller
         if (in_array('new_name', $data)) {
             $new_name = $data['new_name'] === null ? time() : $data['new_name'];
         }
-        if (request()->hasFile($data['file']) && 'single' == $data['upload_type']) {
+        if (request()->hasFile($data['file']) && $data['upload_type'] == 'single') {
             in_array($data['delete_file'], $data) && !empty($data['delete_file']) ? Storage::delete($data['delete_file']) : '';
             return request()->file($data['file'])->store($data['path']);
-        } elseif (request()->hasFile($data['file']) && 'files' == $data['upload_type']) {
+        } elseif (request()->hasFile($data['file']) &&  $data['upload_type'] == 'files') {
 
             $file = request()->file($data['file']); // get the file from the request
             $name = $file->getClientOriginalName(); // get name before upload
@@ -52,7 +52,7 @@ class Upload extends Controller
     // delete single file from File table
     public function delete($id)
     {
-        $file = File::find($id);
+        $file = File::findOrfail($id);
         if (!empty($file)) {
             $file->delete();
             Storage::delete($file->full_file);

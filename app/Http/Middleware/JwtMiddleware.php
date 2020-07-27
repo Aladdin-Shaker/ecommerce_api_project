@@ -50,14 +50,15 @@ class JwtMiddleware extends BaseMiddleware
                 return $this->sendAuthResult($message, $data, $error, $code, $status);
             }
             // if token was not found in the request
-            elseif ($e instanceof  JWTException) {
-                $data = null;
-                $status = false;
-                $error = 'Please, attach a bearer token to your request';
-                $code = 1;
-                $message = '';
-                return $this->sendAuthResult($message, $data, $error, $code, $status);
-            } else {
+            // elseif ($e instanceof  JWTException) {
+            //     $data = null;
+            //     $status = false;
+            //     $error = 'Please, attach a bearer token to your request';
+            //     $code = 1;
+            //     $message = '';
+            //     return $this->sendAuthResult($message, $data, $error, $code, $status);
+            // }
+            else {
                 if ($e->getMessage() === 'User Not Found') {
                     $data = null;
                     $status = false;
@@ -68,7 +69,7 @@ class JwtMiddleware extends BaseMiddleware
                 }
                 $data = null;
                 $status = false;
-                $error = 'Authorization token not found';
+                $error = 'Unauthenticated';
                 $code = 1;
                 $message = '';
                 return $this->sendAuthResult($message, $data, $error, $code, $status);

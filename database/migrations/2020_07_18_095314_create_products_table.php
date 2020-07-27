@@ -33,7 +33,6 @@ class CreateProductsTable extends Migration
 
             $table->longText('other_data')->nullable();
 
-
             $table->bigInteger('department_id')->unsigned()->nullable();
             $table->foreign('department_id')->references('id')->on('departments')->onDelete('cascade');
 
@@ -53,7 +52,7 @@ class CreateProductsTable extends Migration
             $table->foreign('weight_id')->references('id')->on('weights')->onDelete('cascade');
 
             $table->bigInteger('currency_id')->unsigned()->nullable();
-            $table->foreign('currency_id')->references('id')->on('countries');
+            $table->foreign('currency_id')->references('id')->on('countries')->onDelete('cascade');;
 
             $table->timestamps();
         });

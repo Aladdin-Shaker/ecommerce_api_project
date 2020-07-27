@@ -91,7 +91,7 @@ if (!function_exists('setting')) {
 if (!function_exists('up')) {
     function up()
     {
-        return new \App\Http\Controllers\Upload; // call the last value of setings
+        return new \App\Http\Controllers\Upload;
     }
 }
 

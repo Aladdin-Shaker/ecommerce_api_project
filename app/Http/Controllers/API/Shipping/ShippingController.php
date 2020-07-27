@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\API\Shipping;
 
 use Illuminate\Support\Facades\Storage;
-use App\DataTables\ShippingDataTable;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\API\ApiController;
 use Illuminate\Http\Request;
 use App\Model\Shipping;
 
-class ShippingController extends Controller
+class ShippingController extends ApiController
 {
     /**
      * Display a listing of the resource.
@@ -17,17 +16,8 @@ class ShippingController extends Controller
      */
     public function index()
     {
-        // return $shipping->render('admin.shippings.index', ['title' =>  trans('admin.shippings')]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('admin.shippings.create', ['title' => trans('admin.create_shipping')]);
+        $data = Shipping::all();
+        return $this->sendResult('success', $data, [], true);
     }
 
     /**
@@ -54,9 +44,8 @@ class ShippingController extends Controller
                 'delete_file' => '',
             ]);
         }
-        Shipping::create($data);
-        session()->flash('success', trans('admin.record_added'));
-        return redirect(aurl('shipping'));
+        $shipping = Shipping::create($data);
+        return $this->sendOne('shipping adedd successfully', $shipping, [], true);
     }
 
     /**
@@ -67,20 +56,8 @@ class ShippingController extends Controller
      */
     public function show($id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $shipping = Shipping::find($id);
-        $title = trans('admin.edit');
-        return view('admin.shippings.edit', compact('shipping', 'title'));
+        $shipping = Shipping::findOrfail($id);
+        return $this->sendOne('success', $shipping, [], true);
     }
 
     /**
@@ -108,10 +85,9 @@ class ShippingController extends Controller
                 'delete_file' => Shipping::find($id)->icon,
             ]);
         }
-
-        Shipping::where('id', $id)->update($data);
-        session()->flash('success', trans('admin.record_updated'));
-        return redirect(aurl('shipping'));
+        $shipping = Shipping::findOrfail($id);
+        $shipping->update($data);
+        return $this->sendOne('shipping updated successfully', $shipping, [], true);
     }
 
     /**
@@ -122,27 +98,9 @@ class ShippingController extends Controller
      */
     public function destroy($id)
     {
-        $shipping = Shipping::find($id);
+        $shipping = Shipping::findOrfail($id);
         $shipping->delete();
         Storage::delete($shipping->icon);
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('shipping'));
-    }
-
-    public function multi_delete()
-    {
-        if (is_array(request('item'))) {
-            foreach (request('item') as $id) {
-                $shipping = Shipping::find($id);
-                Storage::delete($shipping->icon);
-                $shipping->delete();
-            }
-        } else {
-            $shipping = Shipping::find(request('item'));
-            $shipping->delete();
-            Storage::delete($shipping->icon);
-        }
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('shipping'));
+        return $this->sendOne('shipping deleted successfully', $shipping, [], true);
     }
 }

@@ -18,55 +18,35 @@ Route::group(['prefix' => 'admin', 'namespace' => 'API', 'guard' => 'admin'], fu
 
         // admin
         Route::resource('admin', 'Admin\AdminController', ['only' => ['index', 'update', 'destroy']]);
-        Route::delete('admin/destroy/all', 'Admin\AdminController@multi_delete');
         // user
         Route::resource('users', 'User\UserController', ['only' => ['index', 'update', 'destroy']]);
-        Route::delete('users/destroy/all', 'User\UserController@multi_delete');
         //  countries
-        Route::resource('countries', 'Country\CountryController');
-        Route::delete('countries/destroy/all', 'Country\CountryController@multi_delete');
+        Route::resource('countries', 'Country\CountryController', ['except' => ['edit', 'create']]);
         //  cities
-        Route::resource('cities', 'City\CityController');
-        Route::delete('cities/destroy/all', 'City\CityController@multi_delete');
+        Route::resource('cities', 'City\CityController', ['except' => ['edit', 'create']]);
         //  states
-        Route::resource('states', 'State\StateController');
-        Route::delete('states/destroy/all', 'State\StateController@multi_delete');
+        Route::resource('states', 'State\StateController', ['except' => ['edit', 'create']]);
         // departments
-        Route::resource('departments', 'Department\DepartmentController');
+        Route::resource('departments', 'Department\DepartmentController',  ['except' => ['edit', 'create']]);
         //  trademarks
-        Route::resource('trademarks', 'Trademark\TrademarksController');
-        Route::delete('trademarks/destroy/all', 'Trademark\TrademarksController@multi_delete');
+        Route::resource('trademarks', 'Trademark\TrademarksController',  ['except' => ['edit', 'create']]);
         // manufactures
-        Route::resource('manufactures', 'Manufacture\ManufactureController');
-        Route::delete('manufactures/destroy/all', 'Manufacture\ManufactureController@multi_delete');
+        Route::resource('manufactures', 'Manufacture\ManufactureController',  ['except' => ['edit', 'create']]);
         // shpping
-        Route::resource('shipping', 'Shipping\ShippingController');
-        Route::delete('shipping/destroy/all', 'Shipping\ShippingController@multi_delete');
+        Route::resource('shipping', 'Shipping\ShippingController',  ['except' => ['edit', 'create']]);
         // malls
-        Route::resource('malls', 'Mall\MallController');
-        Route::delete('malls/destroy/all', 'Mall\MallController@multi_delete');
+        Route::resource('malls', 'Mall\MallController', ['except' => ['edit', 'create']]);
         // colors
-        Route::resource('colors', 'Color\ColorController');
-        Route::delete('colors/destroy/all', 'Color\ColorController@multi_delete');
+        Route::resource('colors', 'Color\ColorController', ['except' => ['edit', 'create']]);
         // sizes
-        Route::resource('sizes', 'Size\SizeController');
-        Route::delete('sizes/destroy/all', 'Size\SizeController@multi_delete');
+        Route::resource('sizes', 'Size\SizeController', ['except' => ['edit', 'create']]);
         // weights
-        Route::resource('weights', 'Weight\WeightController');
-        Route::delete('weights/destroy/all', 'Weight\WeightController@multi_delete');
+        Route::resource('weights', 'Weight\WeightController', ['except' => ['edit', 'create']]);
         // products
-        Route::resource('products', 'Product\ProductController')->except('show');
-        Route::delete('products/destroy/all', 'Product\ProductController@multi_delete');
-        Route::post('products/search', 'Product\ProductController@product_search');
-        Route::post('upload/image/{pid}', 'Product\ProductController@upload_files'); // upload another files
-        Route::post('update/image/{pid}', 'Product\ProductController@update_main_photo'); // upload main photo
-        // delete product images from Dropzone
-        Route::post('delete/image', 'Product\ProductController@delete_file'); // delete selected file
-        Route::post('delete/product/image/{pid}', 'Product\ProductController@delete_main_image'); // delete main photo
-        // load size and weight according to department in the product
-        Route::post('load/weight/size', 'Product\ProductController@prepare_weight_size');
-        // copy product data
-        Route::post('products/copy/{pid}', 'Product\ProductController@product_copy');
+        Route::resource('products', 'Product\ProductController', ['only' => ['index', 'update', 'destroy']]);
+        Route::post('update/product/image/{pid}', 'Product\ProductController@update_main_photo'); // upload main photo
+        Route::post('upload/product/files/{pid}', 'Product\ProductController@upload_files'); // upload another files
+        Route::post('products/search/{pid}', 'Product\ProductController@product_search'); // search by (title and content)
 
         // settings
         Route::get('settings', 'Settings\Settings@settings');

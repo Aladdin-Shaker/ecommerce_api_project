@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\API\Mall;
 
 use Illuminate\Support\Facades\Storage;
-use App\Http\Controllers\Controller;
-use App\DataTables\MallDataTable;
+use App\Http\Controllers\API\ApiController;
 use Illuminate\Http\Request;
 use App\Model\Mall;
 
-class MallController extends Controller
+class MallController extends ApiController
 {
     /**
      * Display a listing of the resource.
@@ -17,17 +16,8 @@ class MallController extends Controller
      */
     public function index()
     {
-        // return $mall->render('admin.malls.index', ['title' =>  trans('admin.malls')]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('admin.malls.create', ['title' => trans('admin.create_mall')]);
+        $data = Mall::all();
+        return $this->sendResult('success', $data, [], true);
     }
 
     /**
@@ -60,9 +50,8 @@ class MallController extends Controller
                 'delete_file' => '',
             ]);
         }
-        Mall::create($data);
-        session()->flash('success', trans('admin.record_added'));
-        return redirect(aurl('malls'));
+        $mall = Mall::create($data);
+        return $this->sendOne('mall adedd successfully', $mall, [], true);
     }
 
     /**
@@ -73,20 +62,8 @@ class MallController extends Controller
      */
     public function show($id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $mall = Mall::find($id);
-        $title = trans('admin.edit');
-        return view('admin.malls.edit', compact('mall', 'title'));
+        $mall = Mall::findOrfail($id);
+        return $this->sendOne('success', $mall, [], true);
     }
 
     /**
@@ -96,7 +73,7 @@ class MallController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update($id)
     {
         $data =  $this->validate(request(), [
             'name_ar' => 'required',
@@ -120,10 +97,9 @@ class MallController extends Controller
                 'delete_file' => Mall::find($id)->icon,
             ]);
         }
-
-        Mall::where('id', $id)->update($data);
-        session()->flash('success', trans('admin.record_updated'));
-        return redirect(aurl('malls'));
+        $mall = Mall::findOrfail($id);
+        $mall->update($data);
+        return $this->sendOne('mall updated successfully', $mall, [], true);
     }
 
     /**
@@ -134,27 +110,9 @@ class MallController extends Controller
      */
     public function destroy($id)
     {
-        $mall = Mall::find($id);
+        $mall = Mall::findOrfail($id);
         $mall->delete();
         Storage::delete($mall->icon);
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('malls'));
-    }
-
-    public function multi_delete()
-    {
-        if (is_array(request('item'))) {
-            foreach (request('item') as $id) {
-                $mall = Mall::find($id);
-                Storage::delete($mall->icon);
-                $mall->delete();
-            }
-        } else {
-            $mall = Mall::find(request('item'));
-            $mall->delete();
-            Storage::delete($mall->icon);
-        }
-        session()->flash('success', trans('admin.record_deleted'));
-        return redirect(aurl('malls'));
+        return $this->sendOne('mall deleted successfully', $mall, [], true);
     }
 }
